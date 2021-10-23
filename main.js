@@ -5,7 +5,7 @@ class Particle {
         this.x = x;
         this.y = y;
         this.speed = 1.5;
-
+        this.nextLowestValue = 0;
     }
 
     show() {
@@ -21,6 +21,9 @@ class Particle {
 
         try {
             let dirrection = this.findLowestNeighbour()
+            //heightmap[Math.round(this.x)][Math.round(this.y)] += -(heightmap[Math.round(this.x)][Math.round(this.y)]- this.nextLowestValue)
+            //     console.log(-(heightmap[Math.round(this.x)][Math.round(this.y)]- this.nextLowestValue));
+
 
 
 
@@ -28,8 +31,8 @@ class Particle {
                 case 0:
 
                     //random
-                    this.x += random(-1, 1);
-                    this.y += random(-1, 1);
+                    this.x += 0// random(-1, 1);
+                    this.y += 0 //random(-1, 1);
 
                     break;
                 case 1:
@@ -41,6 +44,7 @@ class Particle {
                     break;
                 case 2:
                     //right
+
                     this.x += this.speed
                     this.y += 0;
 
@@ -95,12 +99,23 @@ class Particle {
     findLowestNeighbour() {
 
 
-        let lowestPoint = Math.min(heightmap[Math.round(this.x)][Math.round(this.y)], heightmap[Math.round(this.x) - 1][Math.round(this.y)], heightmap[Math.round(this.x) + 1][Math.round(this.y)], heightmap[Math.round(this.x)][Math.round(this.y) + 1],
-            heightmap[Math.round(this.x)][Math.round(this.y) + 1], heightmap[Math.round(this.x)][Math.round(this.y) - 1], heightmap[Math.round(this.x) - 1][Math.round(this.y) + 1], heightmap[Math.round(this.x) + 1][Math.round(this.y) + 1],
-            heightmap[Math.round(this.x) - 1][Math.round(this.y) - 1], heightmap[Math.round(this.x) + 1][Math.round(this.y) - 1]);
+        let lowestPoint = Math.min(
+            heightmap[Math.round(this.x)][Math.round(this.y)],
+            heightmap[Math.round(this.x) - 1][Math.round(this.y)],
+            heightmap[Math.round(this.x) + 1][Math.round(this.y)],
+            heightmap[Math.round(this.x)][Math.round(this.y) + 1],
+            heightmap[Math.round(this.x)][Math.round(this.y) + 1],
+            heightmap[Math.round(this.x)][Math.round(this.y) - 1],
+            heightmap[Math.round(this.x) - 1][Math.round(this.y) + 1],
+            heightmap[Math.round(this.x) + 1][Math.round(this.y) + 1],
+            heightmap[Math.round(this.x) - 1][Math.round(this.y) - 1],
+            heightmap[Math.round(this.x) + 1][Math.round(this.y) - 1]
+            );
 
 
+        //  this.nextLowestValue=lowestPoint
 
+        console.log(lowestPoint);
 
         let dirrection = 0;
 
@@ -230,21 +245,31 @@ class ParticleSystem {
 
     }
 
+    destroyAllParticles() {
+
+        for (let index = 0; index < this.particleArray.length; index++) {
+            this.particleArray.splice(index, 1)
+
+        }
+
+    }
+
+
 }
 
 
-let CanvasWidth = 512;
-let CanvasHeight = 512;
+let CanvasWidth = 1024;
+let CanvasHeight = 1024;
 
 let heightmap = Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0));
 let itterations = 1000000;
-let frequency = 0.04;
+let frequency = 0.004;
 let particleSystem = new ParticleSystem(100)
 
 let frequencySlider;
 let data1 = [];
 
-
+let timer = 0;
 
 function setup() {
 
@@ -253,11 +278,11 @@ function setup() {
     background(1);
 
     generateHeightMap(heightmap);
-        console.log(JSON.stringify(heightmap));
+    console.log(JSON.stringify(heightmap));
 
     // fill(204, 101, 192,);
-     particleSystem.CreateParticle()
-     particleSystem.moveParticles()
+    particleSystem.CreateParticle()
+    particleSystem.moveParticles()
 
 
 
@@ -269,18 +294,24 @@ function setup() {
 
 function draw() {
 
+    timer++;
 
     updateViewArray(heightmap)
-
-
-
-
     particleSystem.moveParticles()
-    // console.log( particleSystem.findAvarageGlobalHeight());
-     particleSystem.show()
+    particleSystem.show()
+    if (timer < 80) {
+
+
+        // console.log( particleSystem.findAvarageGlobalHeight());
 
 
 
+
+    } else if (timer == 81) {
+        // particleSystem.destroyAllParticles()
+        // console.log(JSON.stringify(heightmap));
+
+    }
 
 }
 
@@ -294,9 +325,9 @@ function updateViewArray(array) {
         for (let x = 0; x < width; x++) {
 
 
-            pixels[i + 0] = (255-array[y][x])*0.5
-            pixels[i + 1] = (255-array[y][x])*0.5
-            pixels[i + 2] = (255-array[y][x])*0.5
+            pixels[i + 0] = array[y][x]
+            pixels[i + 1] = array[y][x]
+            pixels[i + 2] = array[y][x]
 
             i += 4;
         }
@@ -316,7 +347,7 @@ function generateHeightMap(array) {
     for (let y = 0; y < array.length; y++) {
         for (let x = 0; x < array[0].length; x++) {
             let height = noise(x * frequency, y * frequency)
-            array[x][y] = height*255;
+            array[x][y] = height * 255;
 
         }
 
