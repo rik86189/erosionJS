@@ -14,4 +14,4 @@ numpyarray = np.asarray(data)
 
 im = Image.fromarray(numpyarray)
 im = im.convert("L")
-im.save("notEroded.png")
+im.save("erroded.png")
