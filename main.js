@@ -197,7 +197,7 @@ let colormap = Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0));
 
 
 let frequency = 0.004;
-let particleSystem = new ParticleSystem(100000)
+let particleSystem = new ParticleSystem((CanvasWidth*CanvasHeight)/100)
 
 
 let data1 = [];
@@ -211,6 +211,9 @@ function setup() {
     background(1);
 
     generateHeightMap(heightmap);
+
+
+
     // console.log(JSON.stringify(heightmap));
 
     // fill(204, 101, 192,);
@@ -220,7 +223,7 @@ function setup() {
 
 
 
-    particleSystem.show()
+   // particleSystem.show()
     //  CreateParticle()
 }
 
@@ -233,14 +236,14 @@ function draw() {
 
 
     updateViewArray(heightmap)
-    if (timer <= 1000) {
+    if (timer <= 200) {
 
         particleSystem.moveParticles()
 
 
     }
     console.log( particleSystem.findAvarageGlobalHeight())
-    particleSystem.show()
+ //   particleSystem.show()
 }
 
 
