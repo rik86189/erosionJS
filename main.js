@@ -240,6 +240,7 @@ function draw() {
 
 
     }
+    console.log( particleSystem.findAvarageGlobalHeight())
     particleSystem.show()
 }
 
@@ -295,7 +296,7 @@ function updateViewArray(array) {
 function generateHeightMap(array) {
 
     noiseSeed(1000)
-    noiseDetail(1, 0.51)
+    noiseDetail(2, 0.51)
 
     for (let y = 0; y < array.length; y++) {
         for (let x = 0; x < array[0].length; x++) {
