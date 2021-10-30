@@ -243,7 +243,7 @@ function draw() {
 
     }
     console.log( particleSystem.findAvarageGlobalHeight())
- //   particleSystem.show()
+    particleSystem.show()
 }
 
 
