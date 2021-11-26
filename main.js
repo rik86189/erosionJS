@@ -1,20 +1,28 @@
-let log = [];
+let log = {};
+
+
+
+
+
+
+
 class Particle {
 
     constructor(size, x, y) {
         this.size = size;
         this.x = x;
         this.y = y;
-        this.carryCapacity = 30;
-        this.MaxCarryCapacity = 30;
+        this.carryCapacity = 20;
+        this.MaxCarryCapacity = 80;
         this.amnountCarried = 0;
         this.speed = 1;
         this.nextLowestValue = 0;
         this.isDead = false;
         this.stuckCounter = 0;
-        this.water = 90;
-        this.maxWater = 300;
+        this.water = 60;
+        this.maxWater = 60;
         this.speed = 0;
+        this.removedSoil = 1
     }
 
     show() {
@@ -30,26 +38,32 @@ class Particle {
 
         try {
 
+
             let dirretion = this.findDirrection();
 
 
-            // calculate speed
+            // calculate height diffrence
             let heightdiffrence = heightmap[Math.round(this.x)][Math.round(this.y)] - heightmap[dirretion[2]][dirretion[3]]
+            //calculate speed   
 
-            this.speed = Math.sqrt(dirretion[0] ** 2 + dirretion[1] ** 2 + heightdiffrence ** 2)
+            this.speed = Math.sqrt(6 / 5 * 9.81 * heightdiffrence)
 
-            this.carryCapacity = this.water * (this.MaxCarryCapacity / this.maxWater) * this.speed
-
-          
-
-            colormap[Math.round(this.x)][Math.round(this.y)] = this.speed
+            this.carryCapacity = this.speed * this.water
 
 
             //execute the erosion
-            this.ErodeAndDisposite(dirretion,heightdiffrence)
+            this.ErodeAndDisposite(dirretion, heightdiffrence)
 
             this.x += dirretion[0] * 1
             this.y += dirretion[1] * 1
+
+            console.log(this.water);
+            //remove water
+            this.water -= 1;
+            if (this.water <= 0) {
+                // heightmap[Math.round(this.x)][Math.round(this.y)] += this.amnountCarried
+                this.isDead = true;
+            }
 
         } catch (error) {
 
@@ -59,63 +73,57 @@ class Particle {
 
     ErodeAndDisposite(dirretion) {
 
-      
+        let heightdiffrence = heightmap[Math.round(this.x)][Math.round(this.y)] - heightmap[dirretion[2]][dirretion[3]]
 
 
-        let SoilRemoved = heightmap[Math.round(this.x)][Math.round(this.y)] - ( heightmap[dirretion[2]][dirretion[3]] )
+        let SoilRemoved = Math.min(this.water * this.speed, heightdiffrence * 0.95)
 
-       
+
+
+
+
 
         heightmap[Math.round(this.x)][Math.round(this.y)] -= SoilRemoved;
 
+
         this.amnountCarried += SoilRemoved;
 
-        //check if particle will travel to the same position as before
+
         if (dirretion[0] == 0 & dirretion[1] == 0) {
 
 
             this.stuckCounter += 1;
+
+            heightmap[Math.round(this.x)][Math.round(this.y)] += this.amnountCarried * 0.99
+
+
+            this.disposit()
+
             //check if particle is stuck when a threshold is reached
-            if (this.stuckCounter > 3) {
+            if (this.stuckCounter > 10) {
 
                 //disposite
 
-                heightmap[Math.round(this.x)][Math.round(this.y)] += this.amnountCarried * 0.9
+
+                heightmap[Math.round(this.x)][Math.round(this.y)] += this.amnountCarried * 0.99
+
                 this.isDead = true;
 
             } else {
                 //otherwise pick a random dirrection
-                dirretion[1] += random(-2, 2)
-                dirretion[0] += random(-2, 2)
+                dirretion[1] += random(-1, 1)
+                dirretion[0] += random(-1, 1)
             }
+
+
+
         }
 
-
+        
         if (this.amnountCarried >= this.carryCapacity) {
 
-            //check if it is above the carry capacity
+            this.disposit()
 
-            //Instead of killing the particle emediatly, disposite a % to make the simulation more continuis
-            
-            let diffrence = this.amnountCarried-this.carryCapacity
-
-            this.amnountCarried -= diffrence
-            
-
-            heightmap[Math.round(this.x)][Math.round(this.y)] += this.amnountCarried 
-
-            //this.isDead = true;
-
-
-        }
-
-        //remove water
-        this.water -= 1;
-
-
-        if (this.water <= 0) {
-            heightmap[Math.round(this.x)][Math.round(this.y)] += this.amnountCarried 
-            this.isDead = true;
         }
 
     }
@@ -123,6 +131,7 @@ class Particle {
     findDirrection() {
 
         let radius = 1;
+
 
         let xb = Math.round(this.x) + radius;
         let yb = Math.round(this.y) + radius;
@@ -156,7 +165,7 @@ class Particle {
 
         }
 
-        let vector2D = [Math.round(this.x) - lowestX, Math.round(this.y) - lowestY]
+        //     let vector2D = [Math.round(this.x) - lowestX, Math.round(this.y) - lowestY]
 
 
 
@@ -171,7 +180,27 @@ class Particle {
 
     }
 
+    disposit() {
 
+        
+            //check if it is above the carry capacity
+
+            //Instead of killing the particle emediatly, disposite a % to make the simulation more continuis
+
+            let diffrence = this.amnountCarried - this.carryCapacity * 1.1
+
+
+
+            this.amnountCarried -= diffrence
+
+            colormapsecondair[Math.round(this.x)][Math.round(this.y)] = 10;
+
+            heightmap[Math.round(this.x)][Math.round(this.y)] += diffrence
+
+            // this.isDead = true;
+
+
+    }
 
 }
 
@@ -263,6 +292,27 @@ class ParticleSystem {
 
     }
 
+
+    findAvarageGlobalCarryCapacity() {
+
+        let container = 0;
+
+        for (let i = 0; i < this.particleArray.length; i++) {
+
+            try {
+                container += this.particleArray[i].removedSoil;
+            } catch (error) {
+
+            }
+
+
+        }
+
+        return container / this.particleArray.length
+
+    }
+
+
     destroyAllParticles() {
 
         for (let index = 0; index < this.particleArray.length; index++) {
@@ -272,23 +322,68 @@ class ParticleSystem {
 
     }
 
+    globalWaterAverage() {
+
+        let container = 0;
+
+        for (let i = 0; i < this.particleArray.length; i++) {
+
+            try {
+                container += this.particleArray[i].water;
+            } catch (error) {
+
+            }
+
+
+        }
+
+        return container / this.particleArray.length
+
+    }
+    globalSpeed() {
+
+        let container = 0;
+
+        for (let i = 0; i < this.particleArray.length; i++) {
+
+            try {
+                container += this.particleArray[i].speed;
+            } catch (error) {
+
+            }
+
+
+        }
+
+        return container / this.particleArray.length
+
+    }
+
 }
 
 
-let CanvasWidth = 1024;
-let CanvasHeight = 1024;
+let CanvasWidth = 512;
+let CanvasHeight = 512;
 
-let heightmap = Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0));
+
+
+
+let heightmap = importHeightmap();/*Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0)); */
 let colormap = Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0));
+let colormapsecondair = Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0));
 
-let ShowParticle = true;
+let ShowParticle = false;
 
-let frequency = 0.002;
+let frequency = 0.0003;
 let particleSystem = new ParticleSystem(10000)
 
 let data1 = [];
 let timer = 0;
 let c = 0
+
+
+
+
 
 function setup() {
 
@@ -297,19 +392,19 @@ function setup() {
     pixelDensity(1)
     background(1);
 
-    generateHeightMap(heightmap);
+    //generateHeightMap(heightmap);
 
 
 
-    // fill(204, 101, 192,);
+
     particleSystem.CreateParticle()
+
+
 
     // particleSystem.show()
     //  CreateParticle()
-    //   saveCanvas(c,"not eroded","png")
+    //  saveCanvas(c,"not eroded","png")
 }
-
-
 
 function draw() {
 
@@ -319,7 +414,9 @@ function draw() {
 
 
     particleSystem.moveParticles()
+    //console.log(particleSystem.findAvarageGlobalCarryCapacity());
 
+    console.log(particleSystem.globalSpeed());
 
     //   console.log( particleSystem.findAvarageGlobalHeight())
     if (ShowParticle) {
@@ -327,14 +424,19 @@ function draw() {
     }
 
     if (particleSystem.particleArray.length <= 0) {
+
+
+
         particleSystem.destroyAllParticles()
         console.log("itterate");
         particleSystem.CreateParticle()
 
     }
 
-    
+
+
 }
+
 
 
 let partileVison = false;
@@ -349,9 +451,9 @@ function updateViewArray(array) {
 
             if (partileVison) {
 
-                pixels[i + 0] = colormap[x][y] * 10
-                pixels[i + 1] = colormap[x][y] * 10
-                pixels[i + 2] = colormap[x][y] * 10
+                pixels[i + 0] = colormapsecondair[x][y]
+                pixels[i + 1] = colormapsecondair[x][y]
+                pixels[i + 2] = colormapsecondair[x][y]
 
 
 
@@ -375,16 +477,23 @@ function updateViewArray(array) {
 function generateHeightMap(array) {
 
     noiseSeed(1000)
-    noiseDetail(1, 0.51)
+    noiseDetail(2, 0.51)
+
+    let exposure = 0.5;
 
     for (let y = 0; y < array.length; y++) {
         for (let x = 0; x < array[0].length; x++) {
-            let height = noise(x * frequency, y * frequency) 
-            array[y][x] = height * 255;
+            let height = noise(x * (frequency), y * (frequency)) * 1 // noise(x * (frequency), y * (frequency)) * Math.pow(2, exposure) * noise(x * (frequency / 0.35), y * (frequency / 0.35))
+
+
+            array[y][x] = Math.pow(height, 3) * 255;
 
         }
 
     }
 
 }
+
+
+
 

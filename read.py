@@ -1,17 +1,17 @@
-import json
+import  numpy as np
+import matplotlib.pyplot as plt
+import cv2
 import os
-import numpy as np
-from matplotlib import pyplot as plt
-from PIL import Image
-
-f= open("heightmap2.json","r")
-
-data = json.loads(f.read())
-numpyarray = np.asarray(data)
+import  json
 
 
 
 
-im = Image.fromarray(numpyarray)
-im = im.convert("L")
-im.save("erroded.png")
+
+
+img_array = cv2.imread( "map test.png",cv2.IMREAD_GRAYSCALE)
+   
+
+
+with open("customHeightmap.json","w") as outfile:
+    json.dump(img_array.tolist(),outfile)
