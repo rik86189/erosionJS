@@ -1,4 +1,4 @@
-let log = {};
+let locationLog = [];
 
 
 
@@ -12,8 +12,8 @@ class Particle {
         this.size = size;
         this.x = x;
         this.y = y;
-        this.carryCapacity = 20;
-        this.MaxCarryCapacity = 80;
+        this.carryCapacity = 1;
+        this.MaxCarryCapacity = 2;
         this.amnountCarried = 0;
         this.speed = 1;
         this.nextLowestValue = 0;
@@ -57,11 +57,11 @@ class Particle {
             this.x += dirretion[0] * 1
             this.y += dirretion[1] * 1
 
-            console.log(this.water);
+            
             //remove water
             this.water -= 1;
             if (this.water <= 0) {
-                // heightmap[Math.round(this.x)][Math.round(this.y)] += this.amnountCarried
+                heightmap[Math.round(this.x)][Math.round(this.y)] += this.amnountCarried
                 this.isDead = true;
             }
 
@@ -76,7 +76,7 @@ class Particle {
         let heightdiffrence = heightmap[Math.round(this.x)][Math.round(this.y)] - heightmap[dirretion[2]][dirretion[3]]
 
 
-        let SoilRemoved = Math.min(this.water * this.speed, heightdiffrence * 0.95)
+        let SoilRemoved = Math.min(this.water * this.speed, heightdiffrence * 0.1)
 
 
 
@@ -86,6 +86,7 @@ class Particle {
         heightmap[Math.round(this.x)][Math.round(this.y)] -= SoilRemoved;
 
 
+        colormapsecondair[Math.round(this.x)][Math.round(this.y)] = SoilRemoved;
         this.amnountCarried += SoilRemoved;
 
 
@@ -119,11 +120,11 @@ class Particle {
 
         }
 
-        
+
         if (this.amnountCarried >= this.carryCapacity) {
 
             this.disposit()
-
+          
         }
 
     }
@@ -180,25 +181,57 @@ class Particle {
 
     }
 
+
+    erodeFromNeigbouts(){
+        let radius = 1;
+
+
+        let xb = Math.round(this.x) + radius;
+        let yb = Math.round(this.y) + radius;
+        let lowestPoint = 100000 //set to high number to ensure first loop will overwrite
+        let lowestX = 0;
+        let lowestY = 0;
+        let ErodeWeight = [
+            0.025, 0.025, 0.025,
+            0.025,  0.8, 0.025,
+            0.025, 0.025, 0.025
+
+        ];
+
+
+        for (let y = Math.round(this.y) - radius; y <= yb; y++) {
+            for (let x = Math.round(this.x) - radius; x <= xb; x++) {
+
+
+
+            }
+
+        }
+    }
+
+
+
     disposit() {
 
+
+        //check if it is above the carry capacity
+
+        //Instead of killing the particle emediatly, disposite a % to make the simulation more continuis
+
+
+        //replace maxCarryCapacity to get nice star sky
+        let diffrence = this.amnountCarried - this.carryCapacity 
+
         
-            //check if it is above the carry capacity
-
-            //Instead of killing the particle emediatly, disposite a % to make the simulation more continuis
-
-            let diffrence = this.amnountCarried - this.carryCapacity * 1.1
+     
+        this.amnountCarried -= diffrence
 
 
+        heightmap[Math.round(this.x)][Math.round(this.y)] += diffrence*0.9
 
-            this.amnountCarried -= diffrence
+        // this.isDead = true;
 
-            colormapsecondair[Math.round(this.x)][Math.round(this.y)] = 10;
-
-            heightmap[Math.round(this.x)][Math.round(this.y)] += diffrence
-
-            // this.isDead = true;
-
+        locationLog.push([[Math.round(this.x)], [Math.round(this.y)]])
 
     }
 
@@ -300,7 +333,7 @@ class ParticleSystem {
         for (let i = 0; i < this.particleArray.length; i++) {
 
             try {
-                container += this.particleArray[i].removedSoil;
+                container += this.particleArray[i].carryCapacity;
             } catch (error) {
 
             }
@@ -375,7 +408,7 @@ let colormapsecondair = Array(CanvasWidth).fill().map(() => Array(CanvasHeight).
 let ShowParticle = false;
 
 let frequency = 0.0003;
-let particleSystem = new ParticleSystem(10000)
+let particleSystem = new ParticleSystem(100000)
 
 let data1 = [];
 let timer = 0;
@@ -412,11 +445,17 @@ function draw() {
 
     updateViewArray(heightmap)
 
+    if(mouseIsPressed){
+      
+
+    }
 
     particleSystem.moveParticles()
-    //console.log(particleSystem.findAvarageGlobalCarryCapacity());
+    console.log(particleSystem.findAvarageGlobalCarryCapacity());
 
-    console.log(particleSystem.globalSpeed());
+
+    //console.log(    AveraheHeight(heightmap));
+
 
     //   console.log( particleSystem.findAvarageGlobalHeight())
     if (ShowParticle) {
@@ -495,5 +534,24 @@ function generateHeightMap(array) {
 }
 
 
+function AveraheHeight(heightmap) {
 
+    let array = heightmap;
+
+    let counter = 0;
+
+    for (let i = 0; i < array.length; i++) {
+        for (let x = 0; x < array.length; x++) {
+
+            counter += array[x][i]
+
+        }
+
+    }
+
+
+    return counter / (512 * 512)
+
+
+}
 
