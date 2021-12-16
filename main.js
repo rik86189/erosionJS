@@ -19,15 +19,18 @@ class Particle {
         this.nextLowestValue = 0;
         this.isDead = false;
         this.stuckCounter = 0;
-        this.water = 60;
-        this.maxWater = 60;
+        this.water = 700;
+        this.maxWater = 700;
         this.speed = 0.00001;
         this.removedSoil = 1
+        this.SoilOut= null;
+        this.SoilIn = null;
+       
     }
 
     show() {
 
-        fill(this.carryCapacity,this.carryCapacity,this.carryCapacity)
+        fill(this.carryCapacity, this.carryCapacity, this.carryCapacity)
 
         noStroke()
         circle(this.x, this.y, this.size)
@@ -47,14 +50,14 @@ class Particle {
             let heightdiffrence = heightmap[Math.round(this.x)][Math.round(this.y)] - heightmap[dirretion[2]][dirretion[3]]
             //calculate speed   
 
-        
+
 
             this.speed = Math.sqrt(6 / 5 * 9.81 * heightdiffrence)
 
 
-            if(this.speed == 0){
+            if (this.speed == 0) {
 
-                
+
                 this.dispostionOnNeighbours(this.amnountCarried)
 
                 this.isDead = true;
@@ -66,26 +69,26 @@ class Particle {
 
 
             //execute the erosion
-               this.ErodeAndDisposite(dirretion, heightdiffrence)
+            this.ErodeAndDisposite(dirretion, heightdiffrence)
 
-       
+
 
             this.x += dirretion[0] * 1
             this.y += dirretion[1] * 1
 
 
             //remove water
-            
+
             if (this.water <= 1) {
-                heightmap[Math.round(this.x)][Math.round(this.y)] += this.amnountCarried
+                this.dispostionOnNeighbours(this.amnountCarried)
                 this.isDead = true;
-            }else{
+            } else {
                 this.water -= 1;
 
             }
 
         } catch (error) {
-            
+
 
 
         }
@@ -97,19 +100,19 @@ class Particle {
         let heightdiffrence = heightmap[Math.round(this.x)][Math.round(this.y)] - heightmap[dirretion[2]][dirretion[3]]
 
 
-        let SoilRemoved = Math.min(this.water * this.speed, heightdiffrence * 0.01)
-
-   
-
-         this.erodeFromNeigbouts(SoilRemoved)
+        let SoilRemoved = Math.min(heightdiffrence*0.2, heightdiffrence )
 
 
 
-  
-       //heightmap[Math.round(this.x)][Math.round(this.y)] -= SoilRemoved;
+        this.erodeFromNeigbouts(SoilRemoved)
 
 
-     
+
+
+        //heightmap[Math.round(this.x)][Math.round(this.y)] -= SoilRemoved;
+
+
+
         this.amnountCarried += SoilRemoved;
 
 
@@ -121,7 +124,6 @@ class Particle {
             this.dispostionOnNeighbours(this.amnountCarried)
 
 
-            this.disposit()
 
             //check if particle is stuck when a threshold is reached
             if (this.stuckCounter > 10) {
@@ -207,7 +209,8 @@ class Particle {
 
     erodeFromNeigbouts(input) {
         let radius = 1;
-
+       
+        this.SoilOut = input;
 
         let xb = Math.round(this.x) + radius;
         let yb = Math.round(this.y) + radius;
@@ -217,9 +220,9 @@ class Particle {
         let lowestX = 0;
         let lowestY = 0;
         let ErodeWeight = [
-            0.0625,0.125,0.0625,
-            0.0625,0.25,0.125,
-            0.0625,0.125,0.0625,
+            0.0625, 0.125, 0.0625,
+            0.0625, 0.25, 0.125,
+            0.0625, 0.125, 0.0625,
         ];
 
 
@@ -232,31 +235,32 @@ class Particle {
 
 
             for (let x = Math.round(this.x) - radius; x <= xb; x++) {
-               
+
                 let soilToRemove = input * ErodeWeight[counterX]
+                
                 if (x > width || y > height || y < 0 || x < 0) {
-               
+
                     continue;
 
-                }else if(soilToRemove >0 &&soilToRemove != null &&soilToRemove != NaN){
+                } else if (soilToRemove > 0 && soilToRemove != null && soilToRemove != NaN) {
 
                     heightmap[x][y] -= soilToRemove;
 
-                    counterX +=1;
-    
+                    counterX += 1;
+
 
                 }
 
-            
-                
-     
 
-        
-                
+
+
+
+
+
             }
-         
 
-        
+
+
         }
     }
 
@@ -274,9 +278,9 @@ class Particle {
         let lowestX = 0;
         let lowestY = 0;
         let ErodeWeight = [
-            0.0625,0.125,0.0625,
-            0.0625,0.25,0.125,
-            0.0625,0.125,0.0625,
+            0.0625, 0.125, 0.0625,
+            0.0625, 0.25, 0.125,
+            0.0625, 0.125, 0.0625,
         ];
 
 
@@ -289,28 +293,28 @@ class Particle {
 
 
             for (let x = Math.round(this.x) - radius; x <= xb; x++) {
-                
+
                 let soilToRemove = input * ErodeWeight[counterX]
                 if (x > width || y > height || y < 0 || x < 0) {
-                   
+
                     continue;
 
-                }else if(soilToRemove >0 &&soilToRemove != null &&soilToRemove != NaN){
-        
+                } else if (soilToRemove > 0 && soilToRemove != null && soilToRemove != NaN) {
+
                     heightmap[x][y] += soilToRemove;
-    
-                    counterX +=1;
-             
+
+                    counterX += 1;
+
 
                 }
-            
 
 
-                
+
+
             }
-         
 
-        
+
+
         }
     }
 
@@ -325,22 +329,27 @@ class Particle {
 
 
         //replace maxCarryCapacity to get nice star sky
-        let diffrence =   Math.abs(this.carryCapacity -this.amnountCarried) 
+        let diffrence = Math.abs(this.carryCapacity - this.amnountCarried)
 
 
-        
+
         this.amnountCarried -= diffrence
-        
-        
+
+        if(diffrence <0){
+
+            console.log("hi")
+
+        }
+
         //heightmap[Math.round(this.x)][Math.round(this.y)] += diffrence
-        if(diffrence != null && diffrence != NaN){
+        if (diffrence != null && diffrence != NaN) {
             this.dispostionOnNeighbours(diffrence)
 
         }
 
         //this.isDead = true;
 
-        
+
 
     }
 
@@ -384,7 +393,7 @@ class ParticleSystem {
             for (let i = 0; i < this.particleArray.length; i++) {
 
                 if (this.particleArray[i].x >= width - 3 || this.particleArray[i].y >= height - 3 || this.particleArray[i].x <= 3 || this.particleArray[i].y <= 3) {
-                // console.log(this.particleArray.length);
+                    // console.log(this.particleArray.length);
                     this.particleArray.splice(i, 1)
 
                 }
@@ -413,12 +422,12 @@ class ParticleSystem {
 
     }
 
-    logger(time){
+    logger(time) {
 
-        
+
         for (let i = 0; i < this.particleArray.length; i++) {
 
-            locationLog.push( [time,this.particleArray[i]])
+            locationLog.push([time, this.particleArray[i]])
 
         }
 
@@ -520,14 +529,14 @@ let CanvasHeight = 512;
 
 
 
-let heightmap =Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0)); //importHeightmap();/* */
+let heightmap = importHeightmap();/*Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0)); */
 let colormap = Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0));
 let colormapsecondair = Array(CanvasWidth).fill().map(() => Array(CanvasHeight).fill(0));
 
-let ShowParticle = true;
+let ShowParticle = false;
 
 let frequency = 0.003;
-let particleSystem = new ParticleSystem(100000)
+let particleSystem = new ParticleSystem(300000)
 
 let data1 = [];
 let timer = 0;
@@ -544,7 +553,7 @@ function setup() {
     pixelDensity(1)
     background(1);
 
-    generateHeightMap(heightmap);
+    //generateHeightMap(heightmap);
 
 
 
@@ -558,27 +567,22 @@ function setup() {
     //  saveCanvas(c,"not eroded","png")
 }
 
-let itteration =0 
+let itteration = 0
 
 function draw() {
 
     timer++;
 
-    updateViewArray(heightmap)
-
-    if (timer == 2) {
-        
-
-    }
 
     particleSystem.moveParticles()
-      //console.log(particleSystem.globalWaterAverage());
+    //console.log(particleSystem.globalWaterAverage());
+    updateViewArray(heightmap)
 
 
     //console.log(    AveraheHeight(heightmap));
 
-
-   // console.log(particleSystem.globalSpeed());
+   
+    // console.log(particleSystem.globalSpeed());
 
 
     if (ShowParticle) {
@@ -587,17 +591,17 @@ function draw() {
 
     if (particleSystem.particleArray.length <= 0) {
 
-
         itteration += 1;
         console.log(itteration);
 
         particleSystem.destroyAllParticles()
- 
+
         particleSystem.CreateParticle()
 
     }
-    if(itteration ==100){
-            noLoop();
+    if (itteration == 50) {
+
+        noLoop();
 
 
 
@@ -652,7 +656,7 @@ function generateHeightMap(array) {
 
     for (let y = 0; y < array.length; y++) {
         for (let x = 0; x < array[0].length; x++) {
-            let height =    noise(x * (frequency), y * (frequency)) * 1 
+            let height = noise(x * (frequency), y * (frequency)) * 1
 
 
             array[y][x] = Math.pow(height, 5) * 255;
