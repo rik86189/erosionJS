@@ -1,3 +1,10 @@
+/*
+based on this youtube video done by Sebastian Lague:
+https://www.youtube.com/watch?v=eaXk97ujbPQ&t=251s
+
+*/
+
+
 let locationLog = [];
 let distribution = []
 let TrackCarryCapacity = [];
