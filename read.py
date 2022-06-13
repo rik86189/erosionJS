@@ -9,9 +9,9 @@ import  json
 
 
 
-img_array = cv2.imread( "map test.png",cv2.IMREAD_GRAYSCALE)
+img_array = cv2.imread( "gradient Decent.png",cv2.IMREAD_GRAYSCALE)
    
 
 
-with open("customHeightmap.json","w") as outfile:
+with open("gradientDecent.json","w") as outfile:
     json.dump(img_array.tolist(),outfile)
